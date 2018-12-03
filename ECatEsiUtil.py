@@ -9,67 +9,6 @@ import YoUtil
 #Usage:
 #py ECatEsiUtil.py find 
 #
-'''
-def Main():
-	#print("ECatEsiUtil -> ")
-	#YoUtil.print_list(sys.argv,1)
-	esi = EsiUtil()
-	numofParams = len(sys.argv)
-	print('>> numofParams=:',numofParams)
-	if numofParams > 1:
-		cmd = sys.argv[1].lower()
-		command_options = {
-		'esi_folders' : cmd_esi_folder,
-		'find':cmd_find
-		}
-		
-		if cmd in command_options.keys():
-			command_options[cmd](esi)
-		else:
-			print_usage(cmd)
-	else:
-		print_usage()
-
-def print_usage(cmd=None):
-	if cmd!= None:
-		print('None valid Command option: ',cmd)
-	print('PY ECatEsiUtil.py <cmd> <param1> <param2> <param3>')
-	print('	cmd - esi_folders ')
-	print('	cmd - createDB')
-	print('	cmd - find <what> param1 param2 param3')
-	print('	      what - esi - list of ESI files')
-	print('	      what - vendor <vendorID> list of ESI files of a vendor')
-	print('	      what - device_esi <vendorID> <productCode> <revisionNumber>')
-		
-def cmd_esi_folder(esi):
-	YoUtil.print_list(esi.get_ESI_folders(),1)
-	
-def cmd_find(esi):			
-	cmd = sys.argv[2].lower()
-	if cmd == 'esi':
-		files = esi.get_ESI_files()
-		YoUtil.print_list(files,1)
-	elif cmd == 'vendor':
-		vendor_id = YoUtil.get_int(sys.argv[3])
-		files = esi.get_ESI_files_by_vendor(vendor_id)
-		YoUtil.print_list(files,1)
-	elif cmd == 'createdb':
-		if esi.create_esi_db('esi.db') == True:
-			print('ESI DB created successfully')
-		else:
-			print('failed to create ESI DB ')
-	elif cmd == 'device_esi':
-		vendor_id = YoUtil.get_int(sys.argv[3])
-		productCode = YoUtil.get_int(sys.argv[4])
-		revisionNumber = None
-		if len(sys.argv) > 5:
-			revisionNumber = YoUtil.get_int(sys.argv[5])
-		files = esi.get_devices(vendor_id,productCode,revisionNumber)
-		YoUtil.print_list(files,1)
-	else:
-		print_usage('find')
-'''		
-
 	
 class EsiUtil:
 	def __init__(self):
@@ -97,11 +36,12 @@ class EsiUtil:
 		esi_folders = self.get_ESI_folders()
 		esi_files = list()
 		for pair in esi_folders:
+			key = pair[0]
 			folder = pair[1]
 			files = YoUtil.get_list_of_files(folder,'.xml')
 			for file in files:
 				full_path = os.path.join(folder,file)
-				esi_files.append((pair[0],full_path))
+				esi_files.append((key,full_path))
 
 		if vendor_id==None and productCode==None:
 			return esi_files
@@ -128,7 +68,8 @@ class EsiUtil:
 		ret = list()
 		userESIPath= YoUtil.get_elmo_user_ESI_path()
 		ret.append(('ElmoUserESI',userESIPath))
-		ret.append(('EASESI','C:\Dev\eas\View\ElmoMotionControl.View.Main\EtherCATSlaveLib'))
+		ret.append(('EASESI','C:/Dev/eas/View/ElmoMotionControl.View.Main/EtherCATSlaveLib'))
+		ret.append(('TwinCAT','C:/TwinCAT/3.1/Config/Io/EtherCAT'))
 		return ret
 		
 	def create_esi_db(self, db_name):
@@ -170,7 +111,7 @@ class EsiUtil:
 		self.xml_esi = self.load_esi(esi_path)
 		if self.xml_esi!= None:
 			xml_vendor = self.xml_esi.find('Vendor')
-			if xml_vendor!= None:
+			if xml_vendor!= None:
 				xml_id = xml_vendor.find('Id')
 				if xml_id != None:
 					vendor_id = YoUtil.get_int(xml_id.text)

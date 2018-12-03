@@ -47,6 +47,9 @@ def config(cfg_file,excel):
 @click.command()
 @click.argument('cfg_file',  type=click.Path())
 def slave_names(cfg_file):
+	'''
+	list slave names
+	'''
 	if os.path.isfile(cfg_file):
 		pr1 = pr()
 		cfg = ECatConfigUtil.Config(cfg_file)
@@ -108,6 +111,9 @@ def esi_devices(esi_path):
 	
 @click.command()
 def esi_folders():
+	'''
+	gets the list of folders that holds ESI files
+	'''
 	pr1= pr()
 	esi = EsiUtil()
 	folders = esi.get_ESI_folders()
