@@ -1,0 +1,244 @@
+import sys
+import os
+import random
+import string
+from xml.etree.ElementTree import ElementTree as ET
+from xml.etree.ElementTree import Element, SubElement, Comment, tostring
+import xml.etree 
+import xlsxwriter
+
+# usfull links:
+# https://docs.python.org/3.7/library/stdtypes.html
+
+def Main():
+	print("Main -> ")
+	print ("argv[1]=",sys.argv[1])
+	print ("argv[2]=",sys.argv[2])
+	esi_path = get_elmo_user_ESI_path()
+	#print("Esi Path=",esi_path)
+	lst = get_list_of_files(esi_path,'.xml')
+	for f in lst:
+		full_path = esi_path+'\\'+f
+		aa = get_esi_vendor(full_path)
+		if aa!= None:
+			print ('File=',f,' Vendor Name=',aa)
+			devices = get_devices_desc(full_path)
+			for item in devices:
+				print ('    ProductCode=',item[0],'Revision=',item[1],'Name=',item[2])
+		else:
+			print ('file=',f,)
+	
+	
+def get_elmo_local_appdata():
+	"""Return the elmo local appdata directory."""
+	path=os.getenv('LOCALAPPDATA')+'Elmo Motion Control\Application Studio'
+	return path
+	
+def get_elmo_user_ESI_path():
+	"""Return the user ESI appdata directory."""
+	path=os.getenv('USERPROFILE')+'\Documents\Elmo Application Studio\EtherCAT Slave User Library'
+	return path
+
+def get_list_of_files(dirName, filter):
+	# create a list of file and sub directories 
+	# names in the given directory 
+	listOfFile = os.listdir(dirName)
+	allFiles = list()
+	# Iterate over all the entries
+	for entry in listOfFile:
+		if entry.lower().endswith(filter):
+			# Create full path
+			fullPath = os.path.join(dirName, entry)
+			# If entry is a directory then get the list of files in this directory 
+			if os.path.isdir(fullPath):
+				allFiles = allFiles + get_list_of_files(fullPath,filter)
+			else:
+				allFiles.append(entry)
+				
+	return allFiles        
+	
+def print_list(lst,ident=0):
+	if lst is None or len(lst)==0:
+		return
+	ident_str = ''
+	for num in range(ident):
+		ident_str += ' '
+	for aa in lst:
+		print(ident_str,aa)
+
+def get_esi_vendor(path):
+	#print('>> ',path)
+	tree = ET()
+	tree.parse(path)
+	vNode = tree.find('Vendor') 
+	if vNode!=None:
+		name_node = vNode.find('Name')
+		if name_node != None:
+			return name_node.text
+	return None
+	
+def get_devices_desc(path):
+	pass
+	tree = ET()
+	tree.parse(path)
+	lst = tree.findall('./Descriptions/Devices/Device')
+	all_devices = list()
+	for device_node in lst:
+		device_name = None
+		last_name = None
+		if device_node != None:
+			type_node = device_node.find('Type')
+			if type_node != None:
+				prod = type_node.attrib['ProductCode']
+				rev = type_node.attrib['RevisionNo']
+				
+				for name_node in device_node.findall('Name'):
+					if name_node != None:
+						last_name = name_node.text
+						#print('>> ',name_node.text)
+						if 'LcId' in name_node.attrib.keys():
+							lcid = name_node.attrib['LcId']
+							if lcid == '1031':
+								device_name = name_node.text
+				if device_name is None:
+					device_name = last_name
+				all_devices.append((prod,rev,device_name))
+	return all_devices
+
+def get_xml_content(tag):
+	return xml.etree.ElementTree.tostring(tag) 
+	
+def get_int(str):
+	ret = None
+	if str.startswith('#x') or str.startswith('0x'):
+		str = str.replace('#x','0x')
+		ret = int(str,16)
+		return ret
+	else:
+		ret = int(str,10)
+	return ret
+	
+def get_xml_node_as_int(xml_node,xpath_str):
+	ret = None
+	if xml_node!= None:
+		xml_find_node = xml_node.find(xpath_str)
+		if xml_find_node != None:
+			ret = get_int(xml_find_node.text)
+	return ret
+	
+def get_xml_node_as_bool(xml_node,xpath_str):
+	ret = None
+	if xml_node!= None:
+		xml_find_node = xml_node.find(xpath_str)
+		if xml_find_node != None:
+			val = xml_find_node.text.lower()
+			if  val =='true' or val == '1':
+				ret = True
+			elif val =='false' or val == '0':
+				ret = False
+	return ret
+	
+def get_xml_node_as_text(xml_node,xpath_str):
+	ret = None
+	if xml_node!= None:
+		xml_find_node = xml_node.find(xpath_str)
+		if xml_find_node != None:
+			ret = xml_find_node.text
+	return ret
+	
+def debug_print(text,lst):
+	print('>>',text,lst)
+	
+def list_to_comma_separated(lst):
+	ret = ''
+	for t in lst:
+		if len(ret)==0:
+			ret+= t
+		else:
+			ret+=','+t
+	return ret
+
+def get_indent(indent):
+	ret=''
+	i = 0
+	while i< indent:
+		ret+='   '
+		i+=1
+	return ret
+	
+def get_rand_pass():
+	allchar = string.ascii_letters + string.punctuation + string.digits
+	min_char=8
+	max_char=12
+	range_of_nums = range(random.randint(min_char,max_char))
+	print(range_of_nums)
+	ret = "".join(random.choice(allchar) for x in range_of_nums)
+	return ret
+	
+def str_strip(str):
+	if str:
+		str = str.replace('\r', '').replace('\n', '').strip()
+	if not str:
+		str=''
+	return str
+
+	
+class ecat_excel_util:
+	pass
+	
+	def __init__(self):
+		pass
+		
+	def create_file(self,file_path):
+		self.workbook = xlsxwriter.Workbook(file_path)
+		pass
+		
+	def close(self):
+		self.workbook.close();
+
+	def append_slave_initCmd(self,slave, sheet_name):
+		if self.workbook!= None:
+			worksheet = self.workbook.get_worksheet_by_name(sheet_name)
+			if worksheet is None:
+				worksheet = self.workbook.add_worksheet(sheet_name)
+				
+			#write header
+			worksheet.write(0,0,'Ado')
+			worksheet.write(0,1,'Adp')
+			worksheet.write(0,2,'Cmd')
+			worksheet.write(0,3,'Transitions')
+			worksheet.write(0,4,'Data')
+			worksheet.write(0,5,'Cnt')
+			worksheet.write(0,6,'Comment')
+			
+			row =1
+			#loop the initCmds
+			for i in slave.InitCmds:
+				worksheet.write(row,0,('0x%x' %(i.Ado)))
+				worksheet.write(row,1,('0x%x' %(i.Adp)))
+				worksheet.write(row,2,i.Cmd)
+				worksheet.write(row,3,list_to_comma_separated(i.Transition))
+				worksheet.write(row,4,i.Data)
+				worksheet.write(row,5,i.Cnt)
+				worksheet.write(row,6,i.Comment)
+				row+=1
+				
+			worksheet.autofilter('A1:G60')
+		else:
+			print ('workbook not  created')
+		pass
+
+class print_util:
+	pass
+	
+	def __init__(self):
+		pass
+		
+	def print(self, msg, fg='black', bg='wite'):
+		print(msg)
+	
+	
+if (__name__=='__main__'):
+	print(get_rand_pass())
+	#Main()
+	
