@@ -7,6 +7,7 @@ import xml.etree
 import YoUtil
 from ECatSlave import ECatSlave as Slave
 from ECatMaster import ECatMaster as Master
+from ElmoSpecial import ElmoSpecial as elmo
 
 #Usage:
 #c:\TestDev\py>py ECatConfigUtil.py "C:\Users\yoramo\Documents\Elmo Application Studio\Workspaces\Ws3\Targets\P01\Resources\Config.xml" g01
@@ -137,6 +138,8 @@ class Config:
 			# build the list 
 		return ret
 		
+	def get_elmospecial(self):
+		return None
 		
 	
 if (__name__=='__main__'):

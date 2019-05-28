@@ -21,10 +21,11 @@ def cli():
 
 @click.command()
 @click.option('--excel',help='generate a excel file',type=click.Path())
+@click.option('--elmo',help='load elmo special', default=False,is_flag=True)
 @click.argument('cfg_file',  type=click.Path())
-def config(cfg_file,excel):
+def config(cfg_file,excel,elmo=False):
 	'''  
-	Dispay a full config. 
+	Dispay a full config
 	[--excel] - generate a Excel file 
 	'''
 	if os.path.isfile(cfg_file):
@@ -33,11 +34,17 @@ def config(cfg_file,excel):
 		cfg.load_config()
 		master = cfg.get_master();
 		slave_list = cfg.get_slaves()
+		if elmo!= None:
+			elmoSpecial = cfg.get_elmospecial()
+		else:
+			elmoSpecial = None
 		str = ''
 		if master!=None:
 			str += master.tostring(1)
 		for s in slave_list:
 			str += s.tostring(1)
+		if elmoSpecial!= None:
+			str += elmoSpecial.tostring(1)
 		pr1.print(str)
 		if excel != None:
 			generate_excel(cfg, excel)
@@ -119,105 +126,19 @@ def esi_folders():
 	folders = esi.get_ESI_folders()
 	YoUtil.print_list(folders,1)
 	
-'''
-#can be deprecated
-def Main():
-	print("ECatUtil -> ")
-	#YoUtil.print_list(sys.argv,1)
-	numofParams = len(sys.argv)
-	if numofParams > 1:
-		cmd = sys.argv[1].lower()
-		command_options = {
-		'cfg_slaves' : cmd_slave_list_in_cfg,
-		'cfg_slave_names': cmd_slave_name_in_cfg,
-		'cfg_full' : cmd_cfg_full,
-		'cfg_xslt_initcmd': cmd_cfg_xslt_initcmd,
-		}
-		if cmd is None:
-			print_usage()
-		elif cmd in command_options.keys():
-			command_options[cmd]()
-		else:
-			print_usage(cmd)
-	else:
-		print_usage()
-
-
-#can be deprecated	
-def print_usage(cmd=None):
-	print('ECatUtil Usage:')
-	if cmd!= None:
-		print('None valid Command option: ',cmd)
-	print('  py ECatUtil cfg_slaves <file> - display the list of slaves in a config file')
-	print('  py ECatUtil cfg_full <file> - display a full config display')
-	print('  py ECatUtil cfg_xslt_initcmd <file> <excel_file>- build a excel filles with all InitCmd')
 	
-#can be deprecated
-def cmd_slave_list_in_cfg():
-	if len(sys.argv) >= 3:
-		cfg = ECatConfigUtil.Config(sys.argv[2])
-		cfg.load_config()
-		slave_list = cfg.get_slaves()
-		str = ''
-		for s in slave_list:
-			str += s.tostring(1)
-		print(str)
-	else:
-		print_usage()
+@click.command()
+@click.argument('ws_path',  type=click.Path())
+def workspace(ws_path):
+	pass
 
-#can be deprecated
-def cmd_cfg_full():
-	if len(sys.argv) >= 3:
-		cfg = ECatConfigUtil.Config(sys.argv[2])
-		cfg.load_config()
-		master = cfg.get_master();
-		slave_list = cfg.get_slaves()
-		str = ''
-		if master!=None:
-			str += master.tostring(1)
-		for s in slave_list:
-			str += s.tostring(1)
-		print(str)
-	else:
-		print_usage()
-
-#can be deprecated		
-def cmd_cfg_xslt_initcmd():
-	if len(sys.argv) >= 4:
-		cfg = ECatConfigUtil.Config(sys.argv[2])
-		cfg.load_config()
-		master = cfg.get_master();
-		slave_list = cfg.get_slaves()
-		xlsx = excel()
-		xlsx.create_file(sys.argv[3])
-		num=0
-		for s in slave_list:
-			name = s.name_in_res
-			if name is None:
-				name = 'Slave '+str(num)
-			xlsx.append_slave_initCmd(s,name)
-			num+=1
-		xlsx.close()
-	else:
-		print_usage()
-
-#can be deprecated
-def cmd_slave_name_in_cfg():
-	if len(sys.argv) >= 3:
-		cfg = ECatConfigUtil.Config(sys.argv[2])
-		cfg.load_config()
-		slave_list = cfg.get_slaves_names()
-		print(slave_list)
-	else:
-		print_usage()
-	
-'''
 #Add Commands
 cli.add_command(config)
 cli.add_command(slave_names)
 cli.add_command(find_esi)
 cli.add_command(esi_devices)
 cli.add_command(esi_folders)
+cli.add_command(workspace)
 
 		
 if (__name__=='__main__'):
