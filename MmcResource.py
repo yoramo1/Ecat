@@ -172,6 +172,7 @@ class virtual_object_member:
 		self.name=None
 		self.type=None
 		self.id=None
+		self.index_in_group = None
 		self.member_list = list()
 		self.load()
 		
@@ -180,6 +181,7 @@ class virtual_object_member:
 		self.name=self.xml_node.get('NAME')
 		self.type=self.xml_node.get('TYPE')
 		self.id=self.xml_node.get('ID')
+		self.index_in_group = self.xml_node.get('INDEX_IN_GROUP')
 		
 	def to_string(self):
 		ret= 'Member Name='+self.name
@@ -187,5 +189,7 @@ class virtual_object_member:
 			ret+=' ID='+self.id
 		if self.type != None:
 			ret = ret+'\ttype='+self.type
+		if self.index_in_group != None:
+			ret = ret+'\tIndex_in_group='+self.index_in_group
 			
 		return ret
