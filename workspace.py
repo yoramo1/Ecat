@@ -25,7 +25,7 @@ class workspace:
 				self.target_list.append(tm)
 		
 	def to_string(self):
-		ret = 'Workspace ==>> '
+		ret = 'Workspace ==>> ' +str(len(self.target_list))+' targets'
 		for tm in self.target_list:
 			ret += '\n\t'+tm.to_string()
 		return ret
@@ -41,6 +41,8 @@ class target_model:
 		self.id=None	
 		self.ParentGMASName=None
 		self.TargetType=None
+		self.CommunicationInfoString = None
+		self.isMultiAxis=None
 		self.load()
 		
 	def load(self):
@@ -53,6 +55,9 @@ class target_model:
 				self.ParentGMASName=self.the_xml_node.get('ParentGMASName')
 				self.TargetType = self.the_xml_node.get('TargetType')
 				self.id = self.the_xml_node.get('ID')
+				self.CommunicationInfoString = self.the_xml_node.get('CommunicationInfoString')
+				if self.shrot_item_type=='MaestroTargetModel':
+					self.isMultiAxis = self.the_xml_node.get('IsMultiAxis')
 		
 	def get_short_item_type(self ):
 		ret=None
@@ -69,12 +74,17 @@ class target_model:
 		if self.shrot_item_type!= None:
 			ret = self.shrot_item_type
 		if self.name!= None:
-			ret += '\tName='+self.name
+			ret += '\t"'+self.name+'"'
 		if self.id!= None:
 			ret += '\tID='+self.id
 		if self.ParentGMASName!= None:
-			ret += '\tParent='+self.ParentGMASName
+			ret += '\t'+self.ParentGMASName
 		if self.TargetType!= None:
 			ret += '\tTargetType='+self.TargetType
+		if self.isMultiAxis!= None:
+			ret += '\tIsMultiAxis='+self.isMultiAxis
+		#if self.CommunicationInfoString!= None:
+			#ret += '\CommunicationInfoString='+self.CommunicationInfoString
+		
 		
 		return ret
