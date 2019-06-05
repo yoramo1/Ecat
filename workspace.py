@@ -25,9 +25,9 @@ class workspace:
 				self.target_list.append(tm)
 		
 	def to_string(self):
-		ret = 'Workspace ==>> ' +str(len(self.target_list))+' targets'
+		ret = 'Workspace ==>> ' +str(len(self.target_list))+' targets:'
 		for tm in self.target_list:
-			ret += '\n\t'+tm.to_string()
+			ret += '\n'+tm.to_string()
 		return ret
 		
 class target_model:
@@ -43,6 +43,8 @@ class target_model:
 		self.TargetType=None
 		self.CommunicationInfoString = None
 		self.isMultiAxis=None
+		self.device_type = None
+		self.group_name = None
 		self.load()
 		
 	def load(self):
@@ -58,6 +60,8 @@ class target_model:
 				self.CommunicationInfoString = self.the_xml_node.get('CommunicationInfoString')
 				if self.shrot_item_type=='MaestroTargetModel':
 					self.isMultiAxis = self.the_xml_node.get('IsMultiAxis')
+				self.device_type = self.the_xml_node.get('DeviceType')
+				self.group_name = self.the_xml_node.get('GroupName')
 		
 	def get_short_item_type(self ):
 		ret=None
@@ -70,19 +74,25 @@ class target_model:
 		return ret
 	
 	def to_string(self):
-		ret = 'TargetModel - '
+		if self.shrot_item_type != 'MaestroTargetModel' and (self.ParentGMASName== None or len(self.ParentGMASName)==0):
+			ret = '  ! - '
+		else:
+			ret = '  '
 		if self.shrot_item_type!= None:
-			ret = self.shrot_item_type
+			ret+= '{:<33}'.format(self.shrot_item_type)
+		
 		if self.name!= None:
-			ret += '\t"'+self.name+'"'
+			ret+= '"{:<15}"'.format(self.name)
 		if self.id!= None:
-			ret += '\tID='+self.id
+			ret += '\t'+'ID='+self.id
 		if self.ParentGMASName!= None:
-			ret += '\t'+self.ParentGMASName
+			ret += '   {:<5}'.format(self.ParentGMASName)
 		if self.TargetType!= None:
-			ret += '\tTargetType='+self.TargetType
-		if self.isMultiAxis!= None:
-			ret += '\tIsMultiAxis='+self.isMultiAxis
+			ret+= '\tTargetType={:<22}'.format(self.TargetType)
+		if self.device_type!= None:
+			ret+= '\tDeviceType={:<10}'.format(self.device_type)
+		if self.group_name!= None:
+			ret += '\t'+'GroupName='+self.group_name
 		#if self.CommunicationInfoString!= None:
 			#ret += '\CommunicationInfoString='+self.CommunicationInfoString
 		
